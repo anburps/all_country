@@ -2,75 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation</title>
+    <title>Location Selection</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Select Location</h1>
-    <label>Country:</label>
-    <select id="countrySelect">
+    <h1>Choose Location</h1>
+    <form>
+        {% csrf_token %}
+
+        <!-- Country -->
+        <select id="country" name="country">
+            <option value="">Select Country</option>
+            {% for country in countries %}
+                <option value="{{ country.geonameId }}">{{ country.countryName }}</option>
+            {% endfor %}
+        </select>
+        {% if countries %}
+    <select id="country" name="country">
         <option value="">Select Country</option>
+        {% for country in countries %}
+            <option value="{{ country.geonameId }}">{{ country.countryName }}</option>
+        {% endfor %}
     </select>
-    
-    <label>State:</label>
-    <select id="stateSelect">
-        <option value="">Select State</option>
-    </select>
-    
-    <label>City:</label>
-    <select id="citySelect">
-        <option value="">Select City</option>
-    </select>
+{% else %}
+    <p>No countries available. Please try again later.</p>
+{% endif %}
+
+        <!-- State -->
+        <label for="state">State:</label>
+        <select id="state" name="state">
+            <option value="">Select State</option>
+        </select>
+
+        <!-- City -->
+        <label for="city">City:</label>
+        <select id="city" name="city">
+            <option value="">Select City</option>
+        </select>
+    </form>
 
     <script>
-        // Fetch Countries
-        fetch('/geolocation/countries/')
-            .then(response => response.json())
-            .then(data => {
-                const countrySelect = document.getElementById('countrySelect');
-                data.forEach(country => {
-                    const option = document.createElement('option');
-                    option.value = country.geonameId;
-                    option.textContent = country.countryName;
-                    countrySelect.appendChild(option);
-                });
-            });
+        // Load states based on selected country
+        $('#country').change(function() {
+            const countryId = $(this).val();
+            $('#state').html('<option value="">Select State</option>');
+            $('#city').html('<option value="">Select City</option>');
 
-        // Fetch States based on selected Country
-        document.getElementById('countrySelect').addEventListener('change', function() {
-            const countryId = this.value;
             if (countryId) {
-                fetch(`/geolocation/states/${countryId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const stateSelect = document.getElementById('stateSelect');
-                        stateSelect.innerHTML = '<option value="">Select State</option>';
-                        data.forEach(state => {
-                            const option = document.createElement('option');
-                            option.value = state.name;
-                            option.textContent = state.name;
-                            stateSelect.appendChild(option);
+                $.ajax({
+                    url: '{% url "load_states" %}',
+                    data: { country_id: countryId },
+                    success: function(data) {
+                        $.each(data.states, function(index, state) {
+                            $('#state').append(`<option value="${state.name}">${state.name}</option>`);
                         });
-                    });
+                    }
+                });
             }
         });
 
-        // Fetch Cities based on selected State
-        document.getElementById('stateSelect').addEventListener('change', function() {
-            const stateName = this.value;
+        // Load cities based on selected state
+        $('#state').change(function() {
+            const stateName = $(this).val();
+            $('#city').html('<option value="">Select City</option>');
+
             if (stateName) {
-                fetch(`/geolocation/cities/${stateName}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const citySelect = document.getElementById('citySelect');
-                        citySelect.innerHTML = '<option value="">Select City</option>';
-                        data.forEach(city => {
-                            const option = document.createElement('option');
-                            option.value = city.name;
-                            option.textContent = city.name;
-                            citySelect.appendChild(option);
+                $.ajax({
+                    url: '{% url "load_cities" %}',
+                    data: { state_name: stateName },
+                    success: function(data) {
+                        $.each(data.cities, function(index, city) {
+                            $('#city').append(`<option value="${city.name}">${city.name}</option>`);
                         });
-                    });
+                    }
+                });
             }
         });
     </script>

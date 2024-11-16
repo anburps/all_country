@@ -1,27 +1,53 @@
-# geolocation/views.py
 import requests
 from django.http import JsonResponse
 from django.shortcuts import render
 
-COUNTRY_API = "http://api.geonames.org/countryInfoJSON?username=your_username"
-STATE_API = "http://api.geonames.org/childrenJSON?geonameId={country_id}&username=your_username"
-CITY_API = "http://api.geonames.org/searchJSON?q={state_name}&username=your_username&featureClass=P&maxRows=10"
+# Replace 'anbu' with your GeoNames username.
+COUNTRY_API = "http://api.geonames.org/countryInfoJSON?username=anbu"
+STATE_API = "http://api.geonames.org/childrenJSON?geonameId={country_id}&username=anbu"
+CITY_API = "http://api.geonames.org/searchJSON?q={state_name}&username=anbu"
 
-def get_countries(request):
+# Fetch countries
+import logging
+logger = logging.getLogger(__name__)
+
+def fetch_countries():
     response = requests.get(COUNTRY_API)
-    countries = response.json().get('geonames', [])
-    return JsonResponse(countries, safe=False)
+    if response.status_code == 200:
+        data = response.json()
+        logger.info(f"GeoNames Country API Response: {data}")
+        return data.get('geonames', [])
+    logger.error(f"GeoNames Country API Error: {response.status_code} - {response.text}")
+    return []
 
-def get_states(request, country_id):
+# Fetch states based on country ID
+def fetch_states(country_id):
     response = requests.get(STATE_API.format(country_id=country_id))
-    states = response.json().get('geonames', [])
-    return JsonResponse(states, safe=False)
+    if response.status_code == 200:
+        return response.json().get('geonames', [])
+    return []
 
-def get_cities(request, state_name):
+# Fetch cities based on state name
+def fetch_cities(state_name):
     response = requests.get(CITY_API.format(state_name=state_name))
-    cities = response.json().get('geonames', [])
-    return JsonResponse(cities, safe=False)
+    if response.status_code == 200:
+        return response.json().get('geonames', [])
+    return []
+
+# Main view to render the form
+def location_view(request):
+    countries = fetch_countries()
+    return render(request, 'index.html', {'countries': countries})
 
 
-def index(request):
-    return render(request, 'index.html')
+# AJAX to load states
+def load_states(request):
+    country_id = request.GET.get("country_id")
+    states = fetch_states(country_id)
+    return JsonResponse({"states": states})
+
+# AJAX to load cities
+def load_cities(request):
+    state_name = request.GET.get("state_name")
+    cities = fetch_cities(state_name)
+    return JsonResponse({"cities": cities})
