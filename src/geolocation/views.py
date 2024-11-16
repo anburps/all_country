@@ -24,4 +24,4 @@ def get_cities(request, state_name):
 
 
 def index(request):
-    return render(request, 'geolocation/index.html')
+    return render(request, 'index.html')
