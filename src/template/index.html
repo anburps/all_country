@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation</title>
+</head>
+<body>
+    <h1>Select Location</h1>
+    <label>Country:</label>
+    <select id="countrySelect">
+        <option value="">Select Country</option>
+    </select>
+    
+    <label>State:</label>
+    <select id="stateSelect">
+        <option value="">Select State</option>
+    </select>
+    
+    <label>City:</label>
+    <select id="citySelect">
+        <option value="">Select City</option>
+    </select>
+
+    <script>
+        // Fetch Countries
+        fetch('/geolocation/countries/')
+            .then(response => response.json())
+            .then(data => {
+                const countrySelect = document.getElementById('countrySelect');
+                data.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.geonameId;
+                    option.textContent = country.countryName;
+                    countrySelect.appendChild(option);
+                });
+            });
+
+        // Fetch States based on selected Country
+        document.getElementById('countrySelect').addEventListener('change', function() {
+            const countryId = this.value;
+            if (countryId) {
+                fetch(`/geolocation/states/${countryId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const stateSelect = document.getElementById('stateSelect');
+                        stateSelect.innerHTML = '<option value="">Select State</option>';
+                        data.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state.name;
+                            option.textContent = state.name;
+                            stateSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+
+        // Fetch Cities based on selected State
+        document.getElementById('stateSelect').addEventListener('change', function() {
+            const stateName = this.value;
+            if (stateName) {
+                fetch(`/geolocation/cities/${stateName}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const citySelect = document.getElementById('citySelect');
+                        citySelect.innerHTML = '<option value="">Select City</option>';
+                        data.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city.name;
+                            option.textContent = city.name;
+                            citySelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -21,3 +21,7 @@ def get_cities(request, state_name):
     response = requests.get(CITY_API.format(state_name=state_name))
     cities = response.json().get('geonames', [])
     return JsonResponse(cities, safe=False)
+
+
+def index(request):
+    return render(request, 'geolocation/index.html')
