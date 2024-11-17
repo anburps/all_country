@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 USERNAME = "anbu"  
-COUNTRY_API = f"http://api.geonames.org/countryInfoJSON?username=anburpskn"
+COUNTRY_API = f"http://api.geonames.org/countryInfoJSON?username=anbu"
 STATE_API = "http://api.geonames.org/childrenJSON?geonameId={country_id}&username={username}"
 CITY_API = "http://api.geonames.org/searchJSON?q={state_name}&username={username}"
 
