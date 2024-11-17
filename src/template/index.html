@@ -2,81 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Location Selection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Form</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Choose Location</h1>
+    <h1>Dynamic Country, State, and City Selection</h1>
     <form>
-        {% csrf_token %}
-
-        <!-- Country -->
+        <label for="country">Country:</label>
         <select id="country" name="country">
             <option value="">Select Country</option>
-            {% for country in countries %}
-                <option value="{{ country.geonameId }}">{{ country.countryName }}</option>
-            {% endfor %}
         </select>
-        {% if countries %}
-    <select id="country" name="country">
-        <option value="">Select Country</option>
-        {% for country in countries %}
-            <option value="{{ country.geonameId }}">{{ country.countryName }}</option>
-        {% endfor %}
-    </select>
-{% else %}
-    <p>No countries available. Please try again later.</p>
-{% endif %}
+        <br><br>
 
-        <!-- State -->
         <label for="state">State:</label>
         <select id="state" name="state">
             <option value="">Select State</option>
         </select>
+        <br><br>
 
-        <!-- City -->
         <label for="city">City:</label>
         <select id="city" name="city">
             <option value="">Select City</option>
         </select>
+        <br><br>
     </form>
 
     <script>
-        // Load states based on selected country
-        $('#country').change(function() {
-            const countryId = $(this).val();
-            $('#state').html('<option value="">Select State</option>');
-            $('#city').html('<option value="">Select City</option>');
+        // Fetch countries on page load
+        $(document).ready(function () {
+            $.ajax({
+                url: '/location/countries/',
+                method: 'GET',
+                success: function (data) {
+                    $('#country').empty().append('<option value="">Select Country</option>');
+                    data.countries.forEach(function (country) {
+                        $('#country').append(`<option value="${country.geonameId}">${country.countryName}</option>`);
+                    });
+                }
+            });
 
-            if (countryId) {
-                $.ajax({
-                    url: '{% url "load_states" %}',
-                    data: { country_id: countryId },
-                    success: function(data) {
-                        $.each(data.states, function(index, state) {
-                            $('#state').append(`<option value="${state.name}">${state.name}</option>`);
-                        });
-                    }
-                });
-            }
-        });
+            // Fetch states based on selected country
+            $('#country').change(function () {
+                const countryId = $(this).val();
+                if (countryId) {
+                    $.ajax({
+                        url: `/location/states/${countryId}/`,
+                        method: 'GET',
+                        success: function (data) {
+                            $('#state').empty().append('<option value="">Select State</option>');
+                            data.states.forEach(function (state) {
+                                $('#state').append(`<option value="${state.name}">${state.name}</option>`);
+                            });
+                            $('#city').empty().append('<option value="">Select City</option>');
+                        }
+                    });
+                }
+            });
 
-        // Load cities based on selected state
-        $('#state').change(function() {
-            const stateName = $(this).val();
-            $('#city').html('<option value="">Select City</option>');
-
-            if (stateName) {
-                $.ajax({
-                    url: '{% url "load_cities" %}',
-                    data: { state_name: stateName },
-                    success: function(data) {
-                        $.each(data.cities, function(index, city) {
-                            $('#city').append(`<option value="${city.name}">${city.name}</option>`);
-                        });
-                    }
-                });
-            }
+            // Fetch cities based on selected state
+            $('#state').change(function () {
+                const stateName = $(this).val();
+                if (stateName) {
+                    $.ajax({
+                        url: `/location/cities/${stateName}/`,
+                        method: 'GET',
+                        success: function (data) {
+                            $('#city').empty().append('<option value="">Select City</option>');
+                            data.cities.forEach(function (city) {
+                                $('#city').append(`<option value="${city.name}">${city.name}</option>`);
+                            });
+                        }
+                    });
+                }
+            });
         });
     </script>
 </body>
