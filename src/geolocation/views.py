@@ -28,4 +28,4 @@ def fetch_cities(request, state_name):
     return JsonResponse({'error': 'Unable to fetch cities'}, status=500)
 
 def location_form(request):
-    return render(request, 'location_app/location_form.html')
+    return render(request, 'index.html')
