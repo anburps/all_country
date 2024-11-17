@@ -1,8 +1,9 @@
 from django.urls import path
-from . import views
+from .views import fetch_countries, fetch_states, fetch_cities, location_form
 
 urlpatterns = [
-    path('', views.location_view, name='location_form'),
-    path('load-states/', views.load_states, name='load_states'),
-    path('load-cities/', views.load_cities, name='load_cities'),
+    path('', location_form, name='location_form'),
+    path('countries/', fetch_countries, name='fetch_countries'),
+    path('states/<int:country_id>/', fetch_states, name='fetch_states'),
+    path('cities/<str:state_name>/', fetch_cities, name='fetch_cities'),
 ]
