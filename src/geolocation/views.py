@@ -1,31 +1,41 @@
+# location_app/views.py
+
 import requests
 from django.http import JsonResponse
 from django.shortcuts import render
 
-COUNTRY_API = "http://api.geonames.org/countryInfoJSON?username=anbu"
-STATE_API = "http://api.geonames.org/childrenJSON?geonameId={country_id}&username=anbu"
-CITY_API = "http://api.geonames.org/searchJSON?q={state_name}&username=anbu"
+# GeoNames API credentials
+USERNAME = "anbu"  # Replace with your GeoNames username
+COUNTRY_API = f"http://api.geonames.org/countryInfoJSON?username={USERNAME}"
+STATE_API = "http://api.geonames.org/childrenJSON?geonameId={country_id}&username={username}"
+CITY_API = "http://api.geonames.org/searchJSON?q={state_name}&username={username}"
 
 def fetch_countries(request):
-    response = requests.get(COUNTRY_API)
-    if response.status_code == 200:
-        data = response.json().get('geonames', [])
-        return JsonResponse({'countries': data})
-    return JsonResponse({'error': 'Unable to fetch countries'}, status=500)
+    try:
+        response = requests.get(COUNTRY_API)
+        response.raise_for_status()
+        countries = response.json().get('geonames', [])
+        return JsonResponse({'countries': countries}, safe=False)
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({'error': f"Failed to fetch countries: {str(e)}"}, status=500)
 
 def fetch_states(request, country_id):
-    response = requests.get(STATE_API.format(country_id=country_id))
-    if response.status_code == 200:
-        data = response.json().get('geonames', [])
-        return JsonResponse({'states': data})
-    return JsonResponse({'error': 'Unable to fetch states'}, status=500)
+    try:
+        response = requests.get(STATE_API.format(country_id=country_id, username=USERNAME))
+        response.raise_for_status()
+        states = response.json().get('geonames', [])
+        return JsonResponse({'states': states}, safe=False)
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({'error': f"Failed to fetch states: {str(e)}"}, status=500)
 
 def fetch_cities(request, state_name):
-    response = requests.get(CITY_API.format(state_name=state_name))
-    if response.status_code == 200:
-        data = response.json().get('geonames', [])
-        return JsonResponse({'cities': data})
-    return JsonResponse({'error': 'Unable to fetch cities'}, status=500)
+    try:
+        response = requests.get(CITY_API.format(state_name=state_name, username=USERNAME))
+        response.raise_for_status()
+        cities = response.json().get('geonames', [])
+        return JsonResponse({'cities': cities}, safe=False)
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({'error': f"Failed to fetch cities: {str(e)}"}, status=500)
 
 def location_form(request):
-    return render(request, 'index.html')
+    return render(request, 'location_app/location_form.html')

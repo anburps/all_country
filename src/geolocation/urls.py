@@ -1,3 +1,5 @@
+# location_app/urls.py
+
 from django.urls import path
 from .views import fetch_countries, fetch_states, fetch_cities, location_form
 

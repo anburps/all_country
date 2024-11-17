@@ -29,8 +29,8 @@
     </form>
 
     <script>
-        // Fetch countries on page load
         $(document).ready(function () {
+            // Fetch countries
             $.ajax({
                 url: '/location/countries/',
                 method: 'GET',
@@ -39,10 +39,13 @@
                     data.countries.forEach(function (country) {
                         $('#country').append(`<option value="${country.geonameId}">${country.countryName}</option>`);
                     });
+                },
+                error: function (xhr, status, error) {
+                    alert("Error fetching countries: " + error);
                 }
             });
 
-            // Fetch states based on selected country
+            // Fetch states when a country is selected
             $('#country').change(function () {
                 const countryId = $(this).val();
                 if (countryId) {
@@ -52,17 +55,20 @@
                         success: function (data) {
                             $('#state').empty().append('<option value="">Select State</option>');
                             data.states.forEach(function (state) {
-                                $('#state').append(`<option value="${state.name}">${state.name}</option>`);
+                                $('#state').append(`<option value="${state.geonameId}">${state.name}</option>`);
                             });
                             $('#city').empty().append('<option value="">Select City</option>');
+                        },
+                        error: function (xhr, status, error) {
+                            alert("Error fetching states: " + error);
                         }
                     });
                 }
             });
 
-            // Fetch cities based on selected state
+            // Fetch cities when a state is selected
             $('#state').change(function () {
-                const stateName = $(this).val();
+                const stateName = $(this).find('option:selected').text();
                 if (stateName) {
                     $.ajax({
                         url: `/location/cities/${stateName}/`,
@@ -72,6 +78,9 @@
                             data.cities.forEach(function (city) {
                                 $('#city').append(`<option value="${city.name}">${city.name}</option>`);
                             });
+                        },
+                        error: function (xhr, status, error) {
+                            alert("Error fetching cities: " + error);
                         }
                     });
                 }
