@@ -4,20 +4,23 @@ import requests
 from django.http import JsonResponse
 from django.shortcuts import render
 
-# GeoNames API credentials
-USERNAME = "anbu"  # Replace with your GeoNames username
-COUNTRY_API = f"http://api.geonames.org/countryInfoJSON?username={USERNAME}"
+USERNAME = "anbu"  
+COUNTRY_API = f"http://api.geonames.org/countryInfoJSON?username=anbu"
 STATE_API = "http://api.geonames.org/childrenJSON?geonameId={country_id}&username={username}"
 CITY_API = "http://api.geonames.org/searchJSON?q={state_name}&username={username}"
+
 
 def fetch_countries(request):
     try:
         response = requests.get(COUNTRY_API)
-        response.raise_for_status()
+        response.raise_for_status()  
         countries = response.json().get('geonames', [])
         return JsonResponse({'countries': countries}, safe=False)
-    except requests.exceptions.RequestException as e:
-        return JsonResponse({'error': f"Failed to fetch countries: {str(e)}"}, status=500)
+    except requests.exceptions.HTTPError as e:
+        return JsonResponse({'error': f"HTTP Error: {str(e)}"}, status=response.status_code)
+    except Exception as e:
+        return JsonResponse({'error': f"Error: {str(e)}"}, status=500)
+
 
 def fetch_states(request, country_id):
     try:
@@ -38,4 +41,4 @@ def fetch_cities(request, state_name):
         return JsonResponse({'error': f"Failed to fetch cities: {str(e)}"}, status=500)
 
 def location_form(request):
-    return render(request, 'location_app/location_form.html')
+    return render(request, 'index.html')
