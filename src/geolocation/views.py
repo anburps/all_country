@@ -25,23 +25,7 @@ def fetch_countries(request):
         return JsonResponse({'error': f"Error: {str(e)}"}, status=500)
 
 
-def fetch_states(request, country_id):
-    try:
-        response = requests.get(STATE_API.format(country_id=country_id, username=USERNAME))
-        response.raise_for_status()
-        states = response.json().get('geonames', [])
-        return JsonResponse({'states': states}, safe=False)
-    except requests.exceptions.RequestException as e:
-        return JsonResponse({'error': f"Failed to fetch states: {str(e)}"}, status=500)
 
-def fetch_cities(request, state_name):
-    try:
-        response = requests.get(CITY_API.format(state_name=state_name, username=USERNAME))
-        response.raise_for_status()
-        cities = response.json().get('geonames', [])
-        return JsonResponse({'cities': cities}, safe=False)
-    except requests.exceptions.RequestException as e:
-        return JsonResponse({'error': f"Failed to fetch cities: {str(e)}"}, status=500)
 
 def location_form(request):
     return render(request, 'index.html')
